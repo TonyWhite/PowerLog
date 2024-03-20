@@ -1,0 +1,225 @@
+#!/bin/bash
+
+# Records power-on and power-off history, even in the event of a power failure.
+# Useful for *NIX without a power supply
+
+# DEPENDENCIES
+# bash
+# coreutils
+# cron (recommended)
+# procps
+
+# CONFIG PARAMETERS
+LOG_PATH="/usr/share/power-log"
+LOG_NAME="power.log"
+
+# DO NOT EDIT BELOW
+TMP_DIR="/tmp/power-log"
+CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in temporary folder
+CURRENT_SESSION_PID="${TMP_DIR}/current_session_pid.log"     # The PID of the current script
+CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
+SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful task
+HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all previous sessions
+POWEROFF_KO="🔌"                                             # There is the last scan before an accidentally poweroff
+POWEROFF_OK="⏻"                                             # There is the last scan before a shutdown
+
+function main() {
+  case "$1" in
+    "--help")
+      show_help
+    ;;
+    "--install")
+      install_me
+    ;;
+    "--persistent")
+      persistent_scan
+    ;;
+    "--single")
+      single_scan
+    ;;
+    *)
+      show_help
+    ;;
+  esac
+}
+
+function persistent_scan() {
+  while [ true ]
+  do
+    single_scan
+    sleep 1s
+  done
+}
+
+function single_scan() {
+if [ ! -f "${CURRENT_SESSION_START}" ]; then
+  new_session
+fi
+  current_session "${POWEROFF_KO}"
+}
+
+function new_session() {
+  # Make temporary folder
+  mkdir -p "${TMP_DIR}"
+  printf "$(uptime -s)" > "${CURRENT_SESSION_START}"
+  
+  if [[ "$(whoami)" == "root" ]]; then
+    # Prevents temporary folder from accidental deletion
+    chmod "u=rw","g=r","o=r" "${TMP_DIR}"
+    chmod +t "${TMP_DIR}"
+  fi
+  
+  restore_data
+  write_history_log
+}
+
+# Write the status of the current session
+function current_session() {
+  printf "$(get_current_session),\"$1\"\n" > "${CURRENT_SESSION}.new"
+  set_status "s1"
+  rm "${CURRENT_SESSION}"
+  set_status "s2"
+  mv "${CURRENT_SESSION}.new" "${CURRENT_SESSION}"
+  set_status "0"
+  chmod "u=rw","g=r","o=r" "${CURRENT_SESSION}"
+}
+
+function write_history_log() {
+  # Update the history log
+  touch "${HISTORY_LOG}"
+  cp "${HISTORY_LOG}" "${HISTORY_LOG}.new"
+  set_status "h1"
+  printf "$(cat "${CURRENT_SESSION}")" >> "${HISTORY_LOG}.new"
+  set_status "h2"
+  rm "${HISTORY_LOG}"
+  set_status "h3"
+  mv "${HISTORY_LOG}.new" "${HISTORY_LOG}"
+  set_status "h4"
+  chmod "u=rw","g=r","o=r" "${HISTORY_LOG}"
+  set_status "0"
+}
+
+function get_current_session() {
+  echo "\"$(uptime -s)\",\"$(date +"%Y-%m-%d %H:%M:%S")\""
+}
+
+function set_status() {
+  printf "$1" > "${SESSION_STATUS}"
+}
+
+function get_status() {
+  echo "$(cat "${SESSION_STATUS}")"
+}
+
+function restore_data() {
+  # Restore the status of the last session 
+  if [ ! -f "${SESSION_STATUS}" ]; then
+    touch "${SESSION_STATUS}"
+    # The status of the last session
+    if [ -f "${CURRENT_SESSION}" ]; then
+      if [ -f "${CURRENT_SESSION}.new" ]; then
+        # Both CURRENT_SESSION and CURRENT_SESSION.new
+        set_status "s1"
+      fi
+    else
+      if [ -f "${CURRENT_SESSION}.new" ]; then
+        # Only CURRENT_SESSION.new
+        set_status "s2"
+      else
+        touch "${CURRENT_SESSION}"
+      fi
+    fi
+    
+    # Restore the status of the history log
+    if [ -f "${HISTORY_LOG}" ]; then
+      if [ -f "${HISTORY_LOG}.new" ]; then
+        # Both CURRENT_SESSION and CURRENT_SESSION.new
+        set_status "h1"
+      fi
+    else
+      if [ -f "${HISTORY_LOG}.new" ]; then
+        # Only CURRENT_SESSION.new
+        set_status "h3"
+      else
+        touch "${HISTORY_LOG}"
+      fi
+    fi
+  fi
+  
+  # Restore the last session
+  case "$(get_status)" in
+    # Restore the last session
+    "s1")
+      rm "${CURRENT_SESSION}"
+      set_status "s2"
+      ;&
+    "s2")
+      mv "${CURRENT_SESSION}.new" "${CURRENT_SESSION}"
+      ;;
+    # Restore the history log
+    "h1")
+      printf "$(cat "${CURRENT_SESSION}")\n" >> "${HISTORY_LOG}.new"
+      set_status "h2"
+      ;&
+    "h2")
+      rm "${HISTORY_LOG}"
+      set_status "h3"
+      ;&
+    "h3")
+      mv "${HISTORY_LOG}.new" "${HISTORY_LOG}"
+      ;&
+    "h4")
+      chmod "u=rw","g=r","o=r" "${HISTORY_LOG}"
+      ;;
+  esac
+  set_status "0"
+}
+
+# Detect when the script exits
+trap detect_close SIGINT  # User do ctrl+c
+trap detect_close SIGQUIT # User quit process
+trap detect_close SIGTERM # Close the process
+trap detect_close SIGKILL # Kill the process
+trap detect_close SIGHUP  # Close from parent
+function detect_close() {
+  current_session "${POWEROFF_OK}"
+  exit
+}
+
+function install_me() {
+  echo "Installation in progress..."
+  mkdir -p "${LOG_PATH}"
+  cp "power-log" "${LOG_PATH}"
+  chmod +x "${LOG_PATH}/power-log"
+  ln -s "${LOG_PATH}/power-log" "/usr/bin/power-log"
+  chmod +x "/usr/bin/power-log"
+  echo "End installation."
+}
+
+function show_help() {
+  echo "usage: power-log [option]"
+  echo ""
+  echo "       --help        This help message."
+  echo ""
+  echo "       --install     Install the script."
+  echo "                     You must configure cron manually."
+  echo ""
+  echo "       --persistent  Perform a persistent scan."
+  echo "                     No protection from killing."
+  echo "                     Launch once from cron with this:"
+  echo "                     @reboot power-log --persistent"
+  echo "                     ╰──┬──╯"
+  echo "                        ╰───> Cron calls the script on boot."
+  echo ""
+  echo "       --single      Perform a single scan (Recommended choice)"
+  echo "                     Protect process from killing!"
+  echo "                     Launch every second from cron with this:"
+  echo "                     * * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN > 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((\$REMAIN - \$INC)) ; done"
+  echo "                     ╰───┬───╯                 │"
+  echo "                         │                     ╰─> Cron calls the script every second."
+  echo "                         ╰───────────────────────> Cron do it every minute."
+  echo "Note:"
+  echo "  It is highly recommended to run the script as root to prevent accidental deletions from unprivileged users."
+}
+
+main "$1"
