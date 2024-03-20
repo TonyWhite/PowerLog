@@ -2,7 +2,7 @@
 
 Records power-on and power-off history, even in the event of a power failure.
 
-This is useful for *NIX machines without a power supply.
+This is useful for *NIX machines without an UPS.
 
 You can monitor if your PC is used when you are away.
 
