@@ -16,7 +16,6 @@ LOG_NAME="power.log"
 # DO NOT EDIT BELOW
 TMP_DIR="/tmp/power-log"
 CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in temporary folder
-CURRENT_SESSION_PID="${TMP_DIR}/current_session_pid.log"     # The PID of the current script
 CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
 SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful task
 HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all previous sessions
