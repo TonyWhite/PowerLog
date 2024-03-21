@@ -10,7 +10,7 @@ CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in tempo
 CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
 SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful task
 HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all previous sessions
-POWEROFF_KO="🔌"                                             # There is the last scan before an accidentally poweroff
+POWEROFF_KO="🔌"                                             # There is the last scan before a power failure
 POWEROFF_OK="⏻"                                             # There is the last scan before a shutdown
 
 function main() {
