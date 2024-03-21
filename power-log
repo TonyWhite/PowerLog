@@ -79,7 +79,7 @@ function new_session() {
 function current_session() {
   printf "$(get_current_session),\"$1\"\n" > "${CURRENT_SESSION}.new"
   set_status "s1"
-  rm "${CURRENT_SESSION}"
+  rm -f "${CURRENT_SESSION}"
   set_status "s2"
   mv "${CURRENT_SESSION}.new" "${CURRENT_SESSION}"
   set_status "0"
@@ -93,7 +93,7 @@ function write_history_log() {
   set_status "h1"
   printf "$(cat "${CURRENT_SESSION}")" >> "${HISTORY_LOG}.new"
   set_status "h2"
-  rm "${HISTORY_LOG}"
+  rm -f "${HISTORY_LOG}"
   set_status "h3"
   mv "${HISTORY_LOG}.new" "${HISTORY_LOG}"
   set_status "h4"
@@ -152,7 +152,7 @@ function restore_data() {
   case "$(get_status)" in
     # Restore the last session
     "s1")
-      rm "${CURRENT_SESSION}"
+      rm -f "${CURRENT_SESSION}"
       set_status "s2"
       ;&
     "s2")
@@ -164,7 +164,7 @@ function restore_data() {
       set_status "h2"
       ;&
     "h2")
-      rm "${HISTORY_LOG}"
+      rm -f "${HISTORY_LOG}"
       set_status "h3"
       ;&
     "h3")
