@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# Records power-on and power-off history, even in the event of a power failure.
-# Useful for *NIX without a power supply
-
-# DEPENDENCIES
-# bash
-# coreutils
-# cron (recommended)
-# procps
-
 # CONFIG PARAMETERS
 LOG_PATH="/usr/share/power-log"
 LOG_NAME="power.log"
