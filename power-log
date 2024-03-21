@@ -187,12 +187,54 @@ function detect_close() {
 
 function install_me() {
   echo "Installation in progress..."
+  BIN_PATH="$(get_bin_path)"
   mkdir -p "${LOG_PATH}"
   cp "power-log" "${LOG_PATH}"
   chmod +x "${LOG_PATH}/power-log"
-  ln -s "${LOG_PATH}/power-log" "/usr/bin/power-log"
-  chmod +x "/usr/bin/power-log"
+  ln -s "${LOG_PATH}/power-log" "${BIN_PATH}/power-log"
+  chmod +x "${BIN_PATH}/power-log"
   echo "End installation."
+  echo "Follow README instructions for cron configuration."
+}
+
+function get_bin_path() {
+  OLD_IFS="${IFS}"
+  IFS=':'
+  BIN_PATHS=(${PATH})
+  IFS="${OLD_IFS}"
+  BIN_PATH=""
+  
+  # Searching for /usr/bin
+  for ITEM in "${BIN_PATHS[@]}"; do
+    if [[ "${ITEM}" == "/usr/bin" ]]; then
+      BIN_PATH="/usr/bin"
+      break
+    fi
+  done
+  
+  # If not, search for /bin
+  if [[ "${BIN_PATH}" == "" ]]; then
+    if [[ "${ITEM}" == "/bin" ]]; then
+      BIN_PATH="/bin"
+      break
+    fi
+  fi
+  
+  # If not, search for the first path
+  if [[ "${BIN_PATH}" == "" ]]; then
+    if [[ ${#BIN_PATHS[@]} > 0 ]]; then
+      BIN_PATH="${BIN_PATHS[0]}"
+    fi
+  fi
+  
+  # If the system is wasted...
+  if [[ "${BIN_PATH}" == "" ]]; then
+    >&2 echo "ERROR! There is no PATH for binary. Application aborted."
+    >&2 echo "Seek and destroy the system admin to give justice for all. Nothing else matters. Sad but true."
+    exit
+  fi
+  
+  echo "${BIN_PATH}"
 }
 
 function show_help() {
