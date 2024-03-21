@@ -30,6 +30,9 @@ function main() {
     "--install")
       install_me
     ;;
+    "--uninstall")
+      uninstall_me
+    ;;
     "--persistent")
       persistent_scan
     ;;
@@ -195,6 +198,18 @@ function install_me() {
   chmod +x "${BIN_PATH}/power-log"
   echo "End installation."
   echo "Follow README instructions for cron configuration."
+}
+
+function uninstall_me() {
+  echo "Uninstallation in progress..."
+  BIN_PATH="$(get_bin_path)"
+  rm -f "${BIN_PATH}/power-log"
+  rm -Rf "${LOG_PATH}"
+  echo "End installation."
+  CRON_SET=$(crontab -l | grep -c "power-log")
+  if [[ CRON_SET > 0 ]]; then
+    echo "You must remove the rule from cron."
+  fi
 }
 
 function get_bin_path() {
