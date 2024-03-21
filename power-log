@@ -188,7 +188,8 @@ function install_me() {
   ln -s "${LOG_PATH}/power-log" "${BIN_PATH}/power-log"
   chmod +x "${BIN_PATH}/power-log"
   echo "End installation."
-  echo "Follow README instructions for cron configuration."
+  echo "Please, run 'crontab-e' and add this rule to cron configuration:"
+  echo "* * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN > 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((\$REMAIN - \$INC)) ; done"
 }
 
 function uninstall_me() {
@@ -197,9 +198,13 @@ function uninstall_me() {
   rm -f "${BIN_PATH}/power-log"
   rm -Rf "${LOG_PATH}"
   echo "End uninstallation."
-  CRON_SET=$(crontab -l | grep -c "power-log")
-  if [[ $CRON_SET -gt 0 ]]; then
-    echo "You must remove the rule from cron."
+  CRON_SET=$(crontab -l | grep -c "power-log --single")
+  if [[ $CRON_SET -eq 1 ]]; then
+    echo "Please, run 'crontab -e' and remove this rule from cron configuration:"
+    echo "$(crontab -l | grep "power-log --single")"
+  elif [[ $CRON_SET -gt 1 ]]; then
+    echo "Please, run 'crontab -e' and remove these rules from cron configuration:"
+    echo "$(crontab -l | grep "power-log --single")"
   fi
 }
 
