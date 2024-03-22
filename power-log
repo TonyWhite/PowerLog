@@ -191,7 +191,7 @@ function install_me() {
   echo "[OK] ${BIN_PATH}/power-log"
   echo "End installation."
   echo "Please, run 'crontab-e' and add this rule to cron configuration:"
-  echo "* * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN > 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((\$REMAIN - \$INC)) ; done"
+  echo "* * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN -gt 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((REMAIN-INC)) ; done"
 }
 
 function uninstall_me() {
@@ -273,7 +273,7 @@ function show_help() {
   echo "       --single      Perform a single scan (Recommended choice)"
   echo "                     Protect process from killing!"
   echo "                     Launch every second from cron with this:"
-  echo "                     * * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN > 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((\$REMAIN - \$INC)) ; done"
+  echo "                     * * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN -gt 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((REMAIN-INC)) ; done"
   echo "                     ╰───┬───╯                 │"
   echo "                         │                     ╰─> Cron calls the script every second."
   echo "                         ╰───────────────────────> Cron do it every minute."

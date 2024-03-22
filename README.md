@@ -60,7 +60,7 @@ sudo crontab -e
 Add the rule
 
 ```
-* * * * * REMAIN=60 ; INC=1 ; while [[ $REMAIN > 0 ]] ; do power-log --single ; sleep $INC ; REMAIN=$(($REMAIN - $INC)) ; done
+* * * * * REMAIN=60 ; INC=1 ; while [[ $REMAIN -gt 0 ]] ; do power-log --single ; sleep $INC ; REMAIN=$((REMAIN-INC)) ; done
 ```
 
 And this is the better choice with protection from accidentally kill
