@@ -185,8 +185,10 @@ function install_me() {
   mkdir -p "${LOG_PATH}"
   cp "power-log" "${LOG_PATH}"
   chmod +x "${LOG_PATH}/power-log"
+  echo "[OK] ${LOG_PATH}/power-log"
   ln -s "${LOG_PATH}/power-log" "${BIN_PATH}/power-log"
   chmod +x "${BIN_PATH}/power-log"
+  echo "[OK] ${BIN_PATH}/power-log"
   echo "End installation."
   echo "Please, run 'crontab-e' and add this rule to cron configuration:"
   echo "* * * * * REMAIN=60 ; INC=1 ; while [[ \$REMAIN > 0 ]] ; do power-log --single ; sleep \$INC ; REMAIN=\$((\$REMAIN - \$INC)) ; done"
@@ -196,7 +198,9 @@ function uninstall_me() {
   echo "Uninstallation in progress..."
   BIN_PATH="$(get_bin_path)"
   rm -f "${BIN_PATH}/power-log"
+  echo "[OK] ${BIN_PATH}/power-log"
   rm -Rf "${LOG_PATH}"
+  echo "[OK] ${LOG_PATH}"
   echo "End uninstallation."
   CRON_SET=$(crontab -l | grep -c "power-log --single")
   if [[ $CRON_SET -eq 1 ]]; then
