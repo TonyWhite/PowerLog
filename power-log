@@ -252,7 +252,6 @@ function update_me() {
   
   # The following steps may be used in future releases to handle errors during an update.
   
-  echo "Downloading the update..."
   DOWNLOADER_EXIT_STATUS=0
   if [[ $DOWNLOADER -eq 1 ]]; then
     wget -t 1 "https://raw.githubusercontent.com/TonyWhite/PowerLog/main/power-log" -O "${LOG_PATH}/power-log.downloading"
