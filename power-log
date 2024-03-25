@@ -10,8 +10,8 @@ CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in tempo
 CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
 SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful task
 HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all previous sessions
-POWEROFF_KO="🔌"                                             # There is the last scan before a power failure
-POWEROFF_OK="⏻"                                             # There is the last scan before a shutdown
+POWEROFF_KO=1                                                # There is the last scan before a power failure
+POWEROFF_OK=0                                                # There is the last scan before a shutdown
 
 function main() {
   case "$1" in
@@ -23,6 +23,9 @@ function main() {
     ;;
     "--uninstall")
       uninstall_me
+    ;;
+    "--update")
+      update_me
     ;;
     "--persistent")
       persistent_scan
@@ -168,7 +171,7 @@ function restore_data() {
   set_status "0"
 }
 
-# Detect when the script exits
+# Detect when power-log exits
 trap detect_close SIGINT  # User do ctrl+c
 trap detect_close SIGQUIT # User quit process
 trap detect_close SIGTERM # Close the process
@@ -181,6 +184,7 @@ function detect_close() {
 
 function install_me() {
   echo "Installation in progress..."
+  need_root
   BIN_PATH="$(get_bin_path)"
   mkdir -p "${LOG_PATH}"
   cp "power-log" "${LOG_PATH}"
@@ -196,6 +200,7 @@ function install_me() {
 
 function uninstall_me() {
   echo "Uninstallation in progress..."
+  need_root
   BIN_PATH="$(get_bin_path)"
   rm -f "${BIN_PATH}/power-log"
   echo "[OK] ${BIN_PATH}/power-log"
@@ -209,6 +214,82 @@ function uninstall_me() {
   elif [[ $CRON_SET -gt 1 ]]; then
     echo "Please, run 'crontab -e' and remove these rules from cron configuration:"
     echo "$(crontab -l | grep "power-log --single")"
+  fi
+}
+
+function update_me() {
+  echo "Updating power-log..."
+  need_root
+  
+  # If power-log is not installed, install instead of updating.
+  if [[ ! -f "${LOG_PATH}/power-log" ]]; then
+    echo "power-log is not installed."
+    install_me
+    exit 0 # Exit without error
+  fi
+  # If power-log is installed, proceed
+  
+  # Do you have wget or curl?
+  DOWNLOADER=0 # The downloader: 0 none; 1 wget; 2 curl
+  echo "Checking for wget..."
+  wget --version 2> /dev/null
+  if [[ $? -eq 0 ]]; then
+    echo "wget is installed."
+    DOWNLOADER=1
+  else
+    echo "wget is not installed."
+    echo "Checking for curl..."
+    curl --version 2> /dev/null
+    if [[ $? -eq 0 ]]; then
+      echo "curl is installed."
+      DOWNLOADER=2
+    else
+      echo "curl is not installed."
+      DOWNLOADER=0
+      exit 1 # Exit with error
+    fi
+  fi
+  
+  # The following steps may be used in future releases to handle errors during an update.
+  
+  echo "Downloading the update..."
+  DOWNLOADER_EXIT_STATUS=0
+  if [[ $DOWNLOADER -eq 1 ]]; then
+    wget -t 1 "https://raw.githubusercontent.com/TonyWhite/PowerLog/main/power-log" -O "${LOG_PATH}/power-log.downloading"
+    DOWNLOADER_EXIT_STATUS=$?
+  elif [[ $DOWNLOADER -eq 2 ]]; then
+    curl -f "https://raw.githubusercontent.com/TonyWhite/PowerLog/main/power-log" -o "${LOG_PATH}/power-log.downloading"
+    DOWNLOADER_EXIT_STATUS=$?
+  fi
+  
+  # Exit if the download is failed
+  if [[ $DOWNLOADER_EXIT_STATUS -gt 0 ]]; then
+    echo "Can't download the update."
+    if [[ -f "${LOG_PATH}/power-log.downloading" ]]; then
+      echo "Remove the downloaded file..."
+      rm "${LOG_PATH}/power-log.downloading"
+      echo "REMOVED"
+    fi
+    exit $DOWNLOADER_EXIT_STATUS # Exit with error
+  if
+  
+  # Change the downloaded script status to "new"
+  mv "${LOG_PATH}/power-log.downloading" "${LOG_PATH}/power-log.new"
+  echo "Update the old power-log"
+  cp "${LOG_PATH}/power-log.new" "${LOG_PATH}/power-log"
+  chmod +x "${LOG_PATH}/power-log"
+  echo "[OK] power-log updated"
+  echo "Remove the downloaded data"
+  rm "${LOG_PATH}/power-log.new"
+  echo "[OK] downloaded data removed"
+  echo "End updating."
+}
+
+# If you are not root, exit immediatelly
+function need_root() {
+  if [[ "$(whoami)" != "root" ]]; then
+    echo "You are not root."
+    exit 1
   fi
 }
 
@@ -257,28 +338,31 @@ function show_help() {
   echo ""
   echo "       --help        This help message."
   echo ""
-  echo "       --install     Install the script."
+  echo "       --install     Install power-log."
   echo "                     You must configure cron manually."
   echo ""
-  echo "       --uninstall   Uninstall the script."
+  echo "       --uninstall   Uninstall power-log."
   echo "                     You must remove configuration from cron manually."
+  echo ""
+  echo "       --update      Update this script."
+  echo "                     This option requires the wget or curl packages"
   echo ""
   echo "       --persistent  Perform a persistent scan."
   echo "                     No protection from killing."
   echo "                     Launch once from cron with this:"
   echo "                     @reboot power-log --persistent"
   echo "                     ╰──┬──╯"
-  echo "                        ╰───> Cron calls the script on boot."
+  echo "                        ╰───> Cron calls power-log on boot."
   echo ""
   echo "       --single      Perform a single scan (Recommended choice)"
   echo "                     Protect process from killing!"
   echo "                     Launch every second from cron with this:"
   echo "                     * * * * * bash -c ' for i in {1..60} ; do power-log --single ; sleep 1s ; done '"
   echo "                     ╰───┬───╯            │"
-  echo "                         │                ╰─> Cron calls the script every second."
+  echo "                         │                ╰─> Cron calls power-log every second."
   echo "                         ╰──────────────────> Cron calls the rule every minute."
   echo "Note:"
-  echo "  It is highly recommended to run the script as root to prevent accidental deletions from unprivileged users."
+  echo "  It is highly recommended to run power-log as root to prevent accidental deletions from unprivileged users."
 }
 
 main "$1"
