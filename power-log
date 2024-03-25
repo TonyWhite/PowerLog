@@ -232,14 +232,14 @@ function update_me() {
   # Do you have wget or curl?
   DOWNLOADER=0 # The downloader: 0 none; 1 wget; 2 curl
   echo "Checking for wget..."
-  wget --version 2> /dev/null
+  VOID=$(wget --version 2> /dev/null)
   if [[ $? -eq 0 ]]; then
     echo "wget is installed."
     DOWNLOADER=1
   else
     echo "wget is not installed."
     echo "Checking for curl..."
-    curl --version 2> /dev/null
+    VOID=$(curl --version 2> /dev/null)
     if [[ $? -eq 0 ]]; then
       echo "curl is installed."
       DOWNLOADER=2
