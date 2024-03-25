@@ -271,7 +271,7 @@ function update_me() {
       echo "REMOVED"
     fi
     exit $DOWNLOADER_EXIT_STATUS # Exit with error
-  if
+  fi
   
   # Change the downloaded script status to "new"
   mv "${LOG_PATH}/power-log.downloading" "${LOG_PATH}/power-log.new"
