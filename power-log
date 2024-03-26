@@ -50,7 +50,7 @@ function persistent_scan() {
 function single_scan() {
   # Inhibits the function if an update is in progress
   if [[ -f "$(get_bin_path)/power-log" ]]; then
-    if [ ! -f "${CURRENT_SESSION_START}" ]; then
+    if [[ ! -f "${CURRENT_SESSION_START}" ]]; then
       new_session
     fi
     current_session "${POWEROFF_KO}"
@@ -112,16 +112,16 @@ function get_status() {
 
 function restore_data() {
   # Restore the status of the last session 
-  if [ ! -f "${SESSION_STATUS}" ]; then
+  if [[ ! -f "${SESSION_STATUS}" ]]; then
     touch "${SESSION_STATUS}"
     # The status of the last session
-    if [ -f "${CURRENT_SESSION}" ]; then
-      if [ -f "${CURRENT_SESSION}.new" ]; then
+    if [[ -f "${CURRENT_SESSION}" ]]; then
+      if [[ -f "${CURRENT_SESSION}.new" ]]; then
         # Both CURRENT_SESSION and CURRENT_SESSION.new
         set_status "s1"
       fi
     else
-      if [ -f "${CURRENT_SESSION}.new" ]; then
+      if [[ -f "${CURRENT_SESSION}.new" ]]; then
         # Only CURRENT_SESSION.new
         set_status "s2"
       else
@@ -130,13 +130,13 @@ function restore_data() {
     fi
     
     # Restore the status of the history log
-    if [ -f "${HISTORY_LOG}" ]; then
-      if [ -f "${HISTORY_LOG}.new" ]; then
+    if [[ -f "${HISTORY_LOG}" ]]; then
+      if [[ -f "${HISTORY_LOG}.new" ]]; then
         # Both CURRENT_SESSION and CURRENT_SESSION.new
         set_status "h1"
       fi
     else
-      if [ -f "${HISTORY_LOG}.new" ]; then
+      if [[ -f "${HISTORY_LOG}.new" ]]; then
         # Only CURRENT_SESSION.new
         set_status "h3"
       else
