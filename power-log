@@ -288,14 +288,14 @@ function update_me() {
   chmod +x "${LOG_PATH}/power-log"
   echo "[OK] power-log updated"
   
+  echo "Uninhibits power-log"
+  ln -s "${LOG_PATH}/power-log" "${BIN_PATH}/power-log"
+  chmod +x "${BIN_PATH}/power-log"
+  echo "[OK] Uninhibited"
+  
   echo "Remove the downloaded data"
   rm "${LOG_PATH}/power-log.new"
   echo "[OK] downloaded data removed"
-  
-  echo "Uninhibits power-log"
-  ln -s "${BIN_PATH}/power-log"
-  chmod +x "${BIN_PATH}/power-log"
-  echo "[OK] Uninhibited"
   
   echo "End updating."
 }
