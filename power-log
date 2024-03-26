@@ -278,24 +278,60 @@ function update_me() {
   # Change the downloaded script status to "new"
   mv "${LOG_PATH}/power-log.downloading" "${LOG_PATH}/power-log.new"
   
-  echo "Inhibit power-log"
+  printf "Inhibit power-log..."
   BIN_PATH="$(get_bin_path)"
   rm "${BIN_PATH}/power-log"
-  echo "[OK] Inhibited"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't inhibit"
+    exit 1
+  fi
   
-  echo "Update the old power-log"
+  printf "Overwrite the old power-log..."
   cp "${LOG_PATH}/power-log.new" "${LOG_PATH}/power-log"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't overwrite \"${LOG_PATH}/power-log.new\" to \"${LOG_PATH}/power-log\""
+    exit 1
+  fi
+  
+  printf "Setting executable flag..."
   chmod +x "${LOG_PATH}/power-log"
-  echo "[OK] power-log updated"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't set executable flag to \"${LOG_PATH}/power-log\""
+    exit 1
+  fi
   
-  echo "Uninhibits power-log"
+  printf "Symlinking power-log..."
   ln -s "${LOG_PATH}/power-log" "${BIN_PATH}/power-log"
-  chmod +x "${BIN_PATH}/power-log"
-  echo "[OK] Uninhibited"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't symlink \"${LOG_PATH}/power-log\" to \"${BIN_PATH}/power-log\""
+    exit 1
+  fi
   
-  echo "Remove the downloaded data"
+  printf "Setting executable flag..."
+  chmod +x "${BIN_PATH}/power-log"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't set executable flag to \"${BIN_PATH}/power-log\""
+    exit 1
+  fi
+  
+  printf "Remove the downloaded data..."
   rm "${LOG_PATH}/power-log.new"
-  echo "[OK] downloaded data removed"
+  if [[ $? -eq 0 ]]; then
+    printf "[OK]\n\n"
+  else
+    echo "[ERROR] Can't remove \"${LOG_PATH}/power-log.new\""
+    exit 1
+  fi
   
   echo "End updating."
 }
