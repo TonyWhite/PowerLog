@@ -14,6 +14,8 @@ You can monitor if your PC is used when you are away.
 
 📜 Log in CSV format
 
+⬆️ Easy updates
+
 ## 🤓 Features for nerds
 
 ### 🪶 Dependencies ≅ 0
@@ -28,9 +30,9 @@ Simply follow these instructions.
 
 You can use in proprietary Linux OS, where you can not install custom packages.
 
-### ⬆️ Updates under your control
+### 💪 Resilient to updates
 
-You can update the program through your scripts with the `--update` option.
+You can update the program while it is running.
 
 ## ⚙️ Installation
 
