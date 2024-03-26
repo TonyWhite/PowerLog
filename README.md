@@ -8,7 +8,7 @@ You can monitor if your PC is used when you are away.
 
 ## ⭐ Features
 
-⏻ Record power-on and shutdown
+⚡️ Record power-on and shutdown
 
 🔌 Record power failures
 
