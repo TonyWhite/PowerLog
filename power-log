@@ -48,10 +48,13 @@ function persistent_scan() {
 }
 
 function single_scan() {
-if [ ! -f "${CURRENT_SESSION_START}" ]; then
-  new_session
-fi
-  current_session "${POWEROFF_KO}"
+  # Inhibits the function if an update is in progress
+  if [[ -f "$(get_bin_path)/power-log" ]]; then
+    if [ ! -f "${CURRENT_SESSION_START}" ]; then
+      new_session
+    fi
+    current_session "${POWEROFF_KO}"
+  fi
 }
 
 function new_session() {
@@ -274,13 +277,26 @@ function update_me() {
   
   # Change the downloaded script status to "new"
   mv "${LOG_PATH}/power-log.downloading" "${LOG_PATH}/power-log.new"
+  
+  echo "Inhibit power-log"
+  BIN_PATH="$(get_bin_path)"
+  rm "${BIN_PATH}/power-log"
+  echo "[OK] Inhibited"
+  
   echo "Update the old power-log"
   cp "${LOG_PATH}/power-log.new" "${LOG_PATH}/power-log"
   chmod +x "${LOG_PATH}/power-log"
   echo "[OK] power-log updated"
+  
   echo "Remove the downloaded data"
   rm "${LOG_PATH}/power-log.new"
   echo "[OK] downloaded data removed"
+  
+  echo "Uninhibits power-log"
+  ln -s "${BIN_PATH}/power-log"
+  chmod +x "${BIN_PATH}/power-log"
+  echo "[OK] Uninhibited"
+  
   echo "End updating."
 }
 
