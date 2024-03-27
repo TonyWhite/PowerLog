@@ -43,6 +43,7 @@ You can update the program while it is running.
 * cron (recommended)
 * procps
 * wget OR curl (recommended at least one to download updates)
+* grep (to preserve the user configuration)
 
 ### Download the script
 

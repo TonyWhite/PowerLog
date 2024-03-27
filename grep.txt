@@ -1,0 +1,83 @@
+Uso: grep [OPZIONE]... MODELLI [FILE]...
+Cerca MODELLI in ogni FILE
+Esempio: grep -i "ciao mondo" menu.h main.c
+MODELLI può contenere diversi modelli separati da newline.
+
+Selezione e interpretazione del modello:
+  -E, --extended-regexp     MODELLI sono espressioni regolari estese
+  -F, --fixed-strings       MODELLI sono stringhe
+  -G, --basic-regexp        MODELLI sono espressioni regolari semplici
+  -P, --perl-regexp         MODELLI sono espressioni regolari Perl
+  -e, --regexp=MODELLI      Usa MODELLI per la corrispondenza
+  -f, --file=FILE           Ottiene i MODELLI dal FILE
+  -i, --ignore-case         Ignora la distinzione maiuscole/minuscole
+      --no-ignore-case      Non ignora la distinzione maiuscole/minuscole
+                            (predefinito)
+  -w, --word-regexp         Corrispondere solo a parole intere
+  -x, --line-regexp         Corrispondere solo a righe intere
+  -z, --null-data           Una riga di dati termina con il byte 0 invece che
+                            newline
+
+Varie:
+  -s, --no-messages         Elimina i messaggi di errore
+  -v, --invert-match        Seleziona le righe che non corrispondono
+  -V, --version             Stampa la versione ed esce
+      --help                Visualizza questo aiuto ed esce
+
+Controllo dell'output:
+  -m, --max-count=NUM       Si ferma dopo NUM righe selezionate
+  -b, --byte-offset         Stampa l'offset del byte con le righe di output
+  -n, --line-number         Stampa il numero della riga con le righe di output
+      --line-buffered       Esegue il flush dell'output con ogni riga
+  -H, --with-filename       Stampa il nome del file con le righe di output
+  -h, --no-filename         Elimina il nome del file dall'output
+      --label=ETICH         Usa ETICH come nome del file per lo standard input
+  -o, --only-matching       Mostra solo la parte della riga che corrisponde
+  -q, --quiet, --silent     Elimina tutto l'output normale
+      --binary-files=TIPO   Suppone che i file binari siano del TIPO "binary",
+                            "text" oppure "without-match"
+  -a, --text                Equivale a --binary-files=text
+  -I                        Equivale a --binary-files=without-match
+  -d, --directories=AZIONE  Come gestire le directory: AZIONE è "read",
+                            "recurse" o "skip"
+  -D, --devices=AZIONE      Come gestire device, FIFO e socket: AZIONE è
+                            "read" o "skip"
+  -r, --recursive           Equivale a --directories=recurse
+  -R, --dereference-recursive
+                            Simile al precedente, ma segue i collegamenti
+                            simbolici
+      --include=GLOB        Esamina solo i file corrispondenti a GLOB (modello di file)
+      --exclude=GLOB        Salta file corrispondenti a GLOB
+      --exclude-from=FILE   Salta i file corrispondenti ai modelli nel FILE
+      --exclude-dir=GLOB    Salta le directory corrispondenti a GLOB
+  -L, --files-without-match Stampa solo i nomi dei FILE senza righe selezionate
+  -l, --files-with-matches  Stampa solo i nomi dei FILE con righe selezionate
+  -c, --count               Stampa solo il conteggio delle righe selezionate in
+                            ogni FILE
+  -T, --initial-tab         Allinea le tabulazioni (se necessario)
+  -Z, --null                Stampa il byte 0 dopo ogni nome di FILE
+
+Controllo del contesto:
+  -B, --before-context=NUM  Stampa NUM righe di contesto precedente
+  -A, --after-context=NUM   Stampa NUM righe di contesto seguente
+  -C, --context=NUM         Stampa NUM righe di contesto dell'output
+  -NUM                      Come --context=NUM
+      --group-separator=SEP Stampa SEP in linea tra la corrispondenze con il 
+                            contesto
+      --no-group-separator  Non stampa separatore per corrispondenze con il 
+                            contesto
+      --color[=QUANDO],
+      --colour[=QUANDO]     Usa i colori per distinguere le stringhe
+                            corrispondenti; QUANDO può essere "always", "never"
+                            o "auto"
+  -U, --binary              Non rimuove i caratteri CR all'EOL (MSDOS/Windows)
+
+Se FILE è "-", legge lo standard input; se non c'è alcun FILE, legge "." se in
+modalità ricorsiva, altrimenti "-". Se sono stati specificati meno di due FILE
+presume -h. Esce con lo stato 0 se è stata selezionata almeno una riga,
+1 altrimenti. Se si verifica un errore e l'opzione -q non è
+stata usata, lo stato di uscita è 2.
+
+Segnalare i bug a: bug-grep@gnu.org
+Sito web di GNU grep: <https://www.gnu.org/software/grep/>
+Pagina di aiuto per l'utilizzo di software GNU: <https://www.gnu.org/gethelp/>

@@ -1,10 +1,15 @@
 #!/bin/bash
 
-# CONFIG PARAMETERS
+#####################
+# CONFIG PARAMETERS #
+#####################
 LOG_PATH="/usr/share/power-log"
 LOG_NAME="power.log"
 
-# DO NOT EDIT BELOW
+#####################
+# DO NOT EDIT BELOW #
+#####################
+RELEASE="v.0.9.0"
 TMP_DIR="/tmp/power-log"
 CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in temporary folder
 CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
@@ -26,6 +31,9 @@ function main() {
     ;;
     "--update")
       update_me
+    ;;
+    "--fix")
+      fix_me
     ;;
     "--persistent")
       persistent_scan
@@ -384,12 +392,36 @@ function get_bin_path() {
   echo "${BIN_PATH}"
 }
 
+# --fix is the phantom argument called from the old release when update to this version.
+function fix_me() {
+  # Get the line number of "# CONFIG PARAMETERS"
+  CONFIG_START=$(grep -n -m 1 -e '^# CONFIG PARAMETERS' power-log | cut -f 1 -d ':')
+  
+  # Get the line number of "# DO NOT EDIT BELOW"
+  CONFIG_END=$(grep -n -m 1 -e '^# DO NOT EDIT BELOW' power-log | cut -f 1 -d ':')
+  
+  # Count the lines of the configuration
+  CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))
+  
+  # Get the lines below "# CONFIG PARAMETERS" and before "# DO NOT EDIT BELOW"
+  USER_CONFIG=( $(grep -B $CONFIG_LENGTH -m 1 -e '^# DO NOT EDIT BELOW' power-log | grep -v -e '^#' | grep -v -e '^$') )
+  
+  printf "There are ${#USER_CONFIG[@]} configuration parameter"
+  if [[ ${#USER_CONFIG[@]} != 1 ]]; then
+    echo "s"
+  fi
+  
+  for ITEM in ${USER_CONFIG[@]}; do
+    echo $ITEM
+  done
+}
+
 function show_help() {
   echo "usage: power-log [option]"
   echo ""
   echo "       --help        This help message."
   echo ""
-  echo "       --install     Install power-log."
+  echo "       --install     You have downloaded the script, so install power-log."
   echo "                     You must configure cron manually."
   echo ""
   echo "       --uninstall   Uninstall power-log."
