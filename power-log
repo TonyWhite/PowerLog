@@ -422,7 +422,7 @@ function fix_me() {
     USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | cut -d '#' -f 1)"
   done
 
-  # Remove trailing and leading spaces (without awk or sed: maintains dependency on coreutils)
+  # Remove trailing and leading spaces (without awk or sed to maintain few dependencies)
   for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
     USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | { read __ ; echo "$__" ; })"
   done
