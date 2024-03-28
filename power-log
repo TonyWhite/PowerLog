@@ -45,6 +45,9 @@ function main() {
     "--single")
       single_scan
     ;;
+    "--version")
+      echo "power-log ${RELEASE}"
+    ;;
     *)
       show_help
     ;;
@@ -408,17 +411,20 @@ function fix_me() {
   CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))
   
   # Get the lines below "# CONFIG PARAMETERS" and before "# DO NOT EDIT BELOW"
+  # Without lines that starts with "#""
+  # Without blank lines
   IFS=$RETURN
   USER_CONFIG=( $(grep -B $CONFIG_LENGTH -m 1 -e '^# DO NOT EDIT BELOW' power-log | grep -v -e '^#' | grep -v -e '^$') )
   IFS=$OLD_IFS
   
-  printf "There are ${#USER_CONFIG[@]} configuration parameter"
-  if [[ ${#USER_CONFIG[@]} != 1 ]]; then
-    echo "s"
-  fi
-  
-  for ITEM in ${USER_CONFIG[@]}; do
-    echo $ITEM
+  # Remove comments
+  for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
+    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | cut -d '#' -f 1)"
+  done
+
+  # Remove trailing and leading spaces (without awk or sed: maintains dependency on coreutils)
+  for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
+    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | { read __ ; echo "$__" ; })"
   done
 }
 
@@ -450,6 +456,7 @@ function show_help() {
   echo "                     ╰───┬───╯            │"
   echo "                         │                ╰─> Cron calls power-log every second."
   echo "                         ╰──────────────────> Cron calls the rule every minute."
+  echo "       --version     Print the version."
   echo "Note:"
   echo "  It is highly recommended to run power-log as root to prevent accidental deletions from unprivileged users."
 }
