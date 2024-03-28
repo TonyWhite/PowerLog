@@ -18,6 +18,10 @@ HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all
 POWEROFF_KO=1                                                # There is the last scan before a power failure
 POWEROFF_OK=0                                                # There is the last scan before a shutdown
 
+# IFS
+RETURN=$'\n'
+OLD_IFS=$IFS
+
 function main() {
   case "$1" in
     "--help")
@@ -404,7 +408,9 @@ function fix_me() {
   CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))
   
   # Get the lines below "# CONFIG PARAMETERS" and before "# DO NOT EDIT BELOW"
+  IFS=$RETURN
   USER_CONFIG=( $(grep -B $CONFIG_LENGTH -m 1 -e '^# DO NOT EDIT BELOW' power-log | grep -v -e '^#' | grep -v -e '^$') )
+  IFS=$OLD_IFS
   
   printf "There are ${#USER_CONFIG[@]} configuration parameter"
   if [[ ${#USER_CONFIG[@]} != 1 ]]; then
