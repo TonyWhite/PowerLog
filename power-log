@@ -36,7 +36,7 @@ function main() {
     "--update")
       update_me
     ;;
-    "--fix")
+    "--fix") # The Phantom Parameter
       fix_me
     ;;
     "--persistent")
@@ -399,7 +399,7 @@ function get_bin_path() {
   echo "${BIN_PATH}"
 }
 
-# --fix is the phantom argument called from the old release when update to this version.
+# Prevent breakages during upgrades
 function fix_me() {
   # Get the line number of "# CONFIG PARAMETERS"
   CONFIG_START=$(grep -n -m 1 -e '^# CONFIG PARAMETERS' power-log | cut -f 1 -d ':')
@@ -410,7 +410,7 @@ function fix_me() {
   # Count the lines of the configuration
   CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))
   
-  # Get the lines below "# CONFIG PARAMETERS" and before "# DO NOT EDIT BELOW"
+  # Get config parameters
   # Without lines that starts with "#""
   # Without blank lines
   IFS=$RETURN
@@ -421,7 +421,7 @@ function fix_me() {
   for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
     USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | cut -d '#' -f 1)"
   done
-
+  
   # Remove trailing and leading spaces (without awk or sed to maintain few dependencies)
   for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
     USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | { read __ ; echo "$__" ; })"
