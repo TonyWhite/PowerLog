@@ -9,12 +9,16 @@ LOG_NAME="power.log"
 #####################
 # DO NOT EDIT BELOW #
 #####################
-RELEASE="v.0.9.0"
-TMP_DIR="/tmp/power-log"
+RELEASE="v.0.9.0"                                            # Release version number
+
+TMP_DIR="/tmp/power-log"                                     # Temporary folder
 CURRENT_SESSION_START="${TMP_DIR}/current_session_start.log" # The file in temporary folder
+
+INSTALL_DIR="/usr/share/power-log"
 CURRENT_SESSION="${LOG_PATH}/.current_session.log"           # The log about the current session
-SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful task
+SESSION_STATUS="${LOG_PATH}/.session_status"                 # Records the last successful scan
 HISTORY_LOG="${LOG_PATH}/${LOG_NAME}"                        # The log about all previous sessions
+
 POWEROFF_KO=1                                                # There is the last scan before a power failure
 POWEROFF_OK=0                                                # There is the last scan before a shutdown
 
@@ -401,31 +405,32 @@ function get_bin_path() {
 
 # Prevent breakages during upgrades
 function fix_me() {
-  # Get the line number of "# CONFIG PARAMETERS"
-  CONFIG_START=$(grep -n -m 1 -e '^# CONFIG PARAMETERS' power-log | cut -f 1 -d ':')
+  # Get the path of the old power-log
+  cat "$(get_bin_path)/power-log"
   
-  # Get the line number of "# DO NOT EDIT BELOW"
-  CONFIG_END=$(grep -n -m 1 -e '^# DO NOT EDIT BELOW' power-log | cut -f 1 -d ':')
+  # Read the old config
+  CONFIG_START=$(grep -n -m 1 -e '^# CONFIG PARAMETERS' power-log | cut -f 1 -d ':')  # Get the line number of "# CONFIG PARAMETERS"
+  CONFIG_END=$(grep -n -m 1 -e '^# DO NOT EDIT BELOW' power-log | cut -f 1 -d ':')    # Get the line number of "# DO NOT EDIT BELOW"
+  CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))                                          # Count the lines of the configuration
   
-  # Count the lines of the configuration
-  CONFIG_LENGTH=$((CONFIG_END-CONFIG_START))
-  
-  # Get config parameters
-  # Without lines that starts with "#""
-  # Without blank lines
   IFS=$RETURN
-  USER_CONFIG=( $(grep -B $CONFIG_LENGTH -m 1 -e '^# DO NOT EDIT BELOW' power-log | grep -v -e '^#' | grep -v -e '^$') )
+  USER_CONFIG=( $(grep -B $CONFIG_LENGTH -m 1 -e '^# DO NOT EDIT BELOW' power-log | grep -v -e '^#' | grep -v -e '^$') ) # No blank or commented lines
   IFS=$OLD_IFS
   
-  # Remove comments
+  # Remove comments and blank lines
   for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
-    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | cut -d '#' -f 1)"
+    USER_CONFIG[$INDEX]="$(remove_trailing_leading_spaces "${USER_CONFIG[$INDEX]}")" # Remove trailing and leading spaces
+    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | cut -d '#' -f 1)"         # Remove comments (whole and partial line)
+    USER_CONFIG[$INDEX]="$(remove_trailing_leading_spaces "${USER_CONFIG[$INDEX]}")" # Remove space from code and comment
+    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | grep -v -e '^$')"         # Remove blank lines
   done
   
-  # Remove trailing and leading spaces (without awk or sed to maintain few dependencies)
-  for ((INDEX=0; INDEX < ${#USER_CONFIG[@]}; INDEX++)); do
-    USER_CONFIG[$INDEX]="$(echo "${USER_CONFIG[$INDEX]}" | { read __ ; echo "$__" ; })"
-  done
+}
+
+# Remove trailing and leading spaces
+# without awk or sed to maintain few dependencies
+function remove_trailing_leading_spaces() {
+  echo "$1" | { read __ ; echo "$__" }
 }
 
 function show_help() {
